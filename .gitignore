@@ -1,0 +1,6 @@
+.env
+__pycache__
+.vscode
+myenv
+app.log
+alembic.ini
