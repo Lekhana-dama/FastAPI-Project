@@ -9,3 +9,4 @@ __pycache__/
 .gitignore
 tests/
 docker-compose.yml
+.dockerignore
