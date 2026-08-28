@@ -1,7 +1,7 @@
 from passlib.context import CryptContext
 from jose import jwt,JWTError
 from fastapi import HTTPException
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta,timezone
 from config import SECRET_KEY
 ALGORITHM="HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES=30
@@ -15,7 +15,7 @@ def verify_password(plain_password:str,hashed_password:str):
     return pwd_context.verify(plain_password,hashed_password)
 def create_access_token(data:dict):
     to_encode=data.copy()
-    expire=datetime.utcnow()+timedelta(
+    expire=datetime.now(timezone.utc)+timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
     to_encode.update({"exp":expire})

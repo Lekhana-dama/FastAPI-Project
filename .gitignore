@@ -3,7 +3,5 @@ __pycache__
 .vscode
 myenv
 app.log
-alembic.ini
-docker-compose.yml
-.dockerignore
 .env.docker
+nginx/certs/

@@ -5,6 +5,8 @@ from repositories import student_repository
 from exceptions import custom_exceptions
 import logging
 import logging_config
+from cache.redis_cache import get_cache,set_cache,delete_cache,delete_cache_pattern
+
 
 logger=logging.getLogger(__name__)
 def create_student(student:Student,db:Session):
@@ -21,6 +23,7 @@ def create_student(student:Student,db:Session):
     
           db.commit()
           db.refresh(new_student)
+          delete_cache_pattern("students:*")
           logger.info(
                "Student with ID %s created sucessfully",
                student.id
@@ -41,8 +44,19 @@ def get_all_students(skip:int,limit:int,
                      year:int|None,
                      sort:str|None,
                      search:str|None,db:Session):
+    cache_key=f"students:{skip}:{limit}:{branch}:{year}:{sort}:{search}"
+    cached_students=get_cache(cache_key)
+    if cached_students :
+         print(f"cache HIT for %s",cache_key)
+    print(f"Cache MISS for %s",cache_key)
+
     students=student_repository.get_all_students(skip,limit,branch,year,sort,search,db)
-    return students
+    students_data=[
+         Student.model_validate(student)
+         for student in students
+    ]
+    set_cache(cache_key,[student.model_dump() for student in students_data])
+    return students_data
 
 def get_student_by_id(id:int,db:Session):
     student=student_repository.get_student_by_id(id,db)
@@ -62,6 +76,8 @@ def update_student(id:int,student:Student,db:Session):
           existing_student.year=student.year
           db.commit()
           db.refresh(existing_student)
+          delete_cache(f"student:{id}")
+          delete_cache_pattern(f"student:*")
           return existing_student
     except Exception:
          db.rollback()
@@ -74,6 +90,8 @@ def delete_student(id:int,db:Session):
      try:
         db.delete(deleted)
         db.commit()
+        delete_cache(f"student:{id}")     
+        delete_cache_pattern(f"student:*")
         return {"message":"student deleted"}
      except Exception:
               db.rollback()

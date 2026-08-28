@@ -24,7 +24,7 @@ def get_current_user(
         )
     return user
 def get_current_admin(current_user=Depends(get_current_user)):
-    if current_user.role!="Admin":
+    if current_user.role.lower()!="admin":
         raise HTTPException(
             status_code=403,
             detail="only admin can perform this action"
