@@ -1,7 +1,7 @@
 from unittest.mock import Mock
-from fastapi import HTTPException
 
 from services import student_service
+from exceptions.custom_exceptions import StudentNotFoundException
 
 
 def test_student_by_id():
@@ -32,5 +32,5 @@ def test_get_student_by_id_not_found():
     try:
         student_service.get_student_by_id(1, db)
         assert False
-    except HTTPException as exc:
-        assert exc.status_code == 404
+    except StudentNotFoundException:
+        assert True
