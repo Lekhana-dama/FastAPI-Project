@@ -1,22 +1,17 @@
-import websocket
-import json
+from fastapi.testclient import TestClient
 
-ws = websocket.create_connection("ws://127.0.0.1:8000/ws")
+from main import app
 
-print("Connected to WebSocket!")
 
-message = {
-    "username": "Bob",
-    "message": "Hello FastAPI!"
-}
+client = TestClient(app)
 
-ws.send(json.dumps(message))
 
-print("Message sent!")
+def test_websocket():
+    with client.websocket_connect("/ws") as websocket:
+        websocket.send_json({
+            "message": "Hello"
+        })
 
-response = ws.recv()
+        data = websocket.receive_json()
 
-print("Server response:")
-print(response)
-
-ws.close()
+        assert data["message"] == "Hello"
